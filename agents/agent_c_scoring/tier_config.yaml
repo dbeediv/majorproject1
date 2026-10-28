@@ -1,0 +1,86 @@
+# tier_config.yaml
+# Person C — Risk & Response Engineer
+# Versionable artifact defining the 5 risk score bands and how officers move
+# between them. D's weekly decay job and C's tiering logic both read this file
+# instead of hardcoding thresholds — change a number here, not in code.
+#
+# Score bands (fixed contract — RiskScore.score_band is a Literal with exactly
+# these 5 values, do not rename):
+#   clean       0-39   no active concern
+#   watch       40-59  early signal, monitor only
+#   suspected   60-79  active investigation candidate
+#   high_risk   80-94  escalated, human review required
+#   confirmed   95-100 confirmed pattern, decay is paused
+
+bands:
+  - name: clean
+    min_score: 0
+    max_score: 39
+    description: "No active concern. Default state for well-behaved officers."
+
+  - name: watch
+    min_score: 40
+    max_score: 59
+    description: "Early signal detected. Passive monitoring, no alert generated."
+
+  - name: suspected
+    min_score: 60
+    max_score: 79
+    description: "Active investigation candidate. Alerts generated (tier 2-3)."
+
+  - name: high_risk
+    min_score: 80
+    max_score: 94
+    description: "Escalated. Human review required. Score decay paused."
+
+  - name: confirmed
+    min_score: 95
+    max_score: 100
+    description: "Confirmed pattern. Score decay paused. Resolves via human process only."
+
+# Escalation: minimum consecutive sustained-flag days before an officer's
+# score is allowed to cross INTO this band from a lower one. Mirrors B's
+# 7-day sustained bitmask (hard_flag requires sustained_days >= 5) so tiering
+# doesn't outrun the anomaly signal that's supposed to justify it.
+escalation:
+  watch:
+    min_sustained_days: 0        # can enter directly from a single scoring pass
+  suspected:
+    min_sustained_days: 3
+  high_risk:
+    min_sustained_days: 5        # matches B's hard_flag sustained_days threshold
+  confirmed:
+    min_sustained_days: 7        # full week of sustained signal required
+  target_days_to_high_risk: 21   # reference target for e2e test: a genuinely
+                                  # colluding synthetic officer should reach
+                                  # high_risk within 21 days of drift starting
+
+# De-escalation: how many consecutive clean days before decay is allowed to
+# pull a score down out of its current band. Decay itself is computed by
+# apply_decay_with_band() (Fix C-2) — these are the gating day-counts it reads
+# alongside last_clean_date (Fix C-3).
+de_escalation:
+  watch:
+    min_clean_days_before_decay: 3
+  suspected:
+    min_clean_days_before_decay: 7
+  high_risk:
+    decay_paused: true    # high_risk never decays automatically — human review only
+  confirmed:
+    decay_paused: true    # confirmed never decays automatically — human review only
+
+# Decay rate: points removed per eligible clean day, applied by the weekly
+# decay job (D's Stage 5, Step 39). Tune later via Stage 5's PR-curve pass
+# (Step 25) if bands turn out miscalibrated against real score distributions.
+decay:
+  points_per_clean_day: 2
+  max_points_per_run: 14   # caps a single weekly run at 7 clean days worth
+
+# Alert tier mapping: which AlertPayload.tier (2-5) each score band triggers.
+# clean and watch never generate alerts.
+alert_tiers:
+  suspected: 2
+  high_risk: 3
+  confirmed: 4
+  # tier 5 reserved for confirmed + financial_exposure_inr above a manual
+  # review threshold - not automated in Stage 4, flagged by a human reviewer.

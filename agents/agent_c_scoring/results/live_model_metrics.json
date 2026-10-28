@@ -1,0 +1,57 @@
+{
+  "classification_report": {
+    "0": {
+      "precision": 0.9514285123625238,
+      "recall": 0.97517692927067,
+      "f1-score": 0.9631563526777306,
+      "support": 94388.0
+    },
+    "1": {
+      "precision": 0.8992518059855521,
+      "recall": 0.8165313134468218,
+      "f1-score": 0.8558975198493902,
+      "support": 25612.0
+    },
+    "accuracy": 0.9413166666666667,
+    "macro avg": {
+      "precision": 0.925340159174038,
+      "recall": 0.8958541213587459,
+      "f1-score": 0.9095269362635604,
+      "support": 120000.0
+    },
+    "weighted avg": {
+      "precision": 0.940292263998132,
+      "recall": 0.9413166666666667,
+      "f1-score": 0.9402637424577351,
+      "support": 120000.0
+    }
+  },
+  "auc": 0.9442335189669822,
+  "confusion_matrix": [
+    [
+      92045,
+      2343
+    ],
+    [
+      4699,
+      20913
+    ]
+  ],
+  "feature_cols": [
+    "d1_approval_rate",
+    "d1_approval_rate_z",
+    "d2_garage_concentration",
+    "d2_garage_concentration_z",
+    "d3_threshold_proximity",
+    "d3_threshold_proximity_z",
+    "d4_surveyor_diversity",
+    "d4_surveyor_diversity_z",
+    "d5_turnaround_variance",
+    "d5_turnaround_variance_z",
+    "d6_after_hours_pct",
+    "d6_after_hours_pct_z"
+  ],
+  "scale_pos_weight": 3.6853952326103507,
+  "n_train": 480000,
+  "n_test": 120000
+}
