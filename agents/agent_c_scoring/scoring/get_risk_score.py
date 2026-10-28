@@ -73,6 +73,6 @@ def get_risk_score(feature_row: pd.Series, hard_flag_today: bool, today: date = 
 
 if __name__ == "__main__":
     df = pd.read_csv("data_utils/raw_data/officer_twins_live.csv")
-    sample = df.iloc[0]
+    sample = df.iloc[1]
     rs = get_risk_score(sample, hard_flag_today=False)
     print(rs.model_dump_json(indent=2))

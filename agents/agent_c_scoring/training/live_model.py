@@ -60,6 +60,13 @@ def main():
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y
     )
+    spw = (y_train == 0).sum() / (y_train == 1).sum()
+    print(f"scale_pos_weight = {spw:.3f}")
+
+    n_neg = (y_train == 0).sum()
+    n_pos = (y_train == 1).sum()
+    spw = n_neg / n_pos
+    print(f"\nClass balance -> neg={n_neg} pos={n_pos} scale_pos_weight={spw:.3f}")
 
     print("\nTraining XGBoost live model...")
     model = xgb.XGBClassifier(
@@ -68,6 +75,7 @@ def main():
         learning_rate=0.05,
         subsample=0.8,
         colsample_bytree=0.8,
+        scale_pos_weight=spw,
         eval_metric="logloss",
         random_state=42,
     )
@@ -90,6 +98,7 @@ def main():
         "auc": auc,
         "confusion_matrix": cm,
         "feature_cols": FEATURE_COLS,
+        "scale_pos_weight": spw,
         "n_train": len(X_train),
         "n_test": len(X_test),
     }
